@@ -1,0 +1,44 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.5",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "DDKnockoff",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		},
+		{
+			"Name": "DDKnockoffEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "DDKnockoffTests",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		},
+		{
+			"Name": "ThreepeatAnimTools",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/576ae5f6-df60-42cc-b0e7-5681beb6d585"
+		},
+		{
+			"Name": "ActorPalette",
+			"Enabled": true
+		}
+	]
+}

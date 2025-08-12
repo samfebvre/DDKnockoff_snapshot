@@ -1,0 +1,104 @@
+name: Build DDKnockoff
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Unreal Engine Project
+    runs-on: self-hosted
+    
+    strategy:
+      matrix:
+        config: [Development]  # Can add Shipping later
+        platform: [Win64]
+      fail-fast: false
+    
+    env:
+      # Parameterized UE Version
+      UE_VERSION: "5.5"
+      UE_PATH: "C:\\Program Files\\Epic Games\\UE_5.5"
+      
+      # Core paths
+      PROJECT_NAME: DDKnockoff
+      PROJECT_PATH: "${{ github.workspace }}\\DDKnockoff.uproject"
+      
+      # Derived paths
+      UE_EDITOR_CMD: "C:\\Program Files\\Epic Games\\UE_5.5\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe"
+      UE_BUILD_TOOL: "C:\\Program Files\\Epic Games\\UE_5.5\\Engine\\Build\\BatchFiles\\RunUAT.bat"
+      BUILD_OUTPUT_DIR: "${{ github.workspace }}\\BuildOutput"
+      TEST_LOG_PATH: "${{ github.workspace }}\\Saved\\Logs\\TestLog.txt"
+      
+      # Build configuration
+      BUILD_CONFIG: ${{ matrix.config }}
+      BUILD_PLATFORM: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Build project
+        shell: cmd
+        run: |
+          echo Building %PROJECT_NAME% in %BUILD_CONFIG% configuration for %BUILD_PLATFORM%...
+          "%UE_BUILD_TOOL%" BuildCookRun ^
+            -project="%PROJECT_PATH%" ^
+            -noP4 -platform=%BUILD_PLATFORM% ^
+            -clientconfig=%BUILD_CONFIG% -serverconfig=%BUILD_CONFIG% ^
+            -cook -build -stage -pak -archive ^
+            -archivedirectory="%BUILD_OUTPUT_DIR%\\%BUILD_CONFIG%"
+          
+      - name: Check build output
+        if: failure()
+        shell: cmd
+        run: |
+          echo Build failed. Checking for error logs...
+          echo.
+          echo === Checking for log files ===
+          if exist "%GITHUB_WORKSPACE%\Saved\Logs\*.log" (
+            for %%f in ("%GITHUB_WORKSPACE%\Saved\Logs\*.log") do (
+              echo.
+              echo === Contents of %%f ===
+              type "%%f"
+            )
+          ) else (
+            echo No log files found in Saved\Logs directory
+          )
+          
+      - name: Run all DDKnockoff tests
+        shell: cmd
+        run: |
+          echo Running tests for %PROJECT_NAME%...
+          "%UE_EDITOR_CMD%" "%PROJECT_PATH%" ^
+            -nullrhi -RenderOffscreen -unattended -nopause -stdout ^
+            -testexit="Automation Test Queue Empty" ^
+            -ExecCmds="Automation RunTests DDKnockoff; Quit" ^
+            -log="TestLog.txt"
+
+      - name: Check test results
+        if: always()
+        shell: cmd
+        run: |
+          echo Checking test results...
+          if exist "%TEST_LOG_PATH%" (
+            echo Test log found. Searching for failures...
+            findstr /i "error fail exception" "%TEST_LOG_PATH%" || echo No errors found in test log
+          ) else (
+            echo Test log not found at expected location
+          )
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.platform }}-${{ matrix.config }}
+          path: |
+            ${{ github.workspace }}/Saved/Logs/**/*.log
+            ${{ github.workspace }}/Saved/Logs/**/*.txt
+          if-no-files-found: warn
+          retention-days: 1
