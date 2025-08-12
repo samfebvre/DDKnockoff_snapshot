@@ -16,7 +16,7 @@ Developed with **Unreal Engine 5.5.4**.
 ## Quick Start / Opening the Project
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YourUsername/DDKnockoff.git
+   git clone https://github.com/samfebvre/DDKnockoff_snapshot
 
 2. Right-click DDKnockoff.uproject → Generate Visual Studio project files
 
@@ -25,21 +25,6 @@ Developed with **Unreal Engine 5.5.4**.
 4. Build the project from the IDE, then launch from Unreal Engine.
 
 5. The project will open without assets and is intended for code reference only.
-
----
-
-## Included Folder Structure
-DDKnockoff/
-├── .github/           # GitHub Actions / automation workflows
-├── Config/            # Default Unreal config files
-├── Source/            # All gameplay, editor, and test source code
-│   ├── DDKnockoff/        # Runtime module
-│   ├── DDKnockoffEditor/  # Editor module
-│   └── DDKnockoffTests/   # Automation test module
-├── .gitattributes
-├── .gitignore
-├── DDKnockoff.uproject
-└── README.md
 
 ---
 
